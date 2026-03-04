@@ -1,4 +1,4 @@
-name: Build Model Images
+name: Build Engine Images
 
 on:
   push:
@@ -6,86 +6,44 @@ on:
     paths:
       - 'Dockerfile.*'
       - 'scripts/**'
-      - 'models.json'
       - '.github/workflows/build-images.yml'
   workflow_dispatch:
     inputs:
-      model:
-        description: 'Model to build (or "all")'
+      image:
+        description: 'Image to build (or "all")'
         required: true
-        default: 'stheno-8b'
+        default: 'all'
         type: choice
         options:
           - all
-          - euryale-70b
-          - sapphira-70b
-          - llama-3.3-70b
-          - mistral-small-24b
-          - cydonia-24b
-          - violet-lotus-12b
-          - stheno-8b
-          - lumimaid-8b
-          - llama-3.1-8b
-          - qwen-2.5-7b
-          - qwen3-embedding-8b
-          - bge-reranker-v2-m3
-          - whisper-large-v3
-          - flux-schnell
-          - dreamshaper-8
+          - sglang
+          - whisper
+          - diffusion
 
 env:
   REGISTRY: ghcr.io/swanchain/swan-model-images
 
 jobs:
-  build-matrix:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-      - uses: actions/checkout@v4
-      - id: set-matrix
-        run: |
-          if [ "${{ github.event.inputs.model }}" = "all" ] || [ -z "${{ github.event.inputs.model }}" ]; then
-            echo 'matrix={"include":[
-              {"name":"euryale-70b","hf_repo":"Sao10K/L3.3-70B-Euryale-v2.3","dockerfile":"Dockerfile.sglang"},
-              {"name":"sapphira-70b","hf_repo":"BruhzWater/Sapphira-L3.3-70b-0.1","dockerfile":"Dockerfile.sglang"},
-              {"name":"llama-3.3-70b","hf_repo":"meta-llama/Llama-3.3-70B-Instruct","dockerfile":"Dockerfile.sglang"},
-              {"name":"mistral-small-24b","hf_repo":"mistralai/Mistral-Small-3.2-24B-Instruct-2506","dockerfile":"Dockerfile.sglang"},
-              {"name":"cydonia-24b","hf_repo":"TheDrummer/Cydonia-24B-v4.1","dockerfile":"Dockerfile.sglang"},
-              {"name":"violet-lotus-12b","hf_repo":"FallenMerick/MN-Violet-Lotus-12B","dockerfile":"Dockerfile.sglang"},
-              {"name":"stheno-8b","hf_repo":"Sao10K/L3-8B-Stheno-v3.2","dockerfile":"Dockerfile.sglang"},
-              {"name":"lumimaid-8b","hf_repo":"NeverSleep/Llama-3-Lumimaid-8B-v0.1","dockerfile":"Dockerfile.sglang"},
-              {"name":"llama-3.1-8b","hf_repo":"meta-llama/Llama-3.1-8B-Instruct","dockerfile":"Dockerfile.sglang"},
-              {"name":"qwen-2.5-7b","hf_repo":"Qwen/Qwen2.5-7B-Instruct","dockerfile":"Dockerfile.sglang"},
-              {"name":"qwen3-embedding-8b","hf_repo":"Qwen/Qwen3-Embedding-8B","dockerfile":"Dockerfile.sglang"},
-              {"name":"bge-reranker-v2-m3","hf_repo":"BAAI/bge-reranker-v2-m3","dockerfile":"Dockerfile.sglang"},
-              {"name":"whisper-large-v3","hf_repo":"Systran/faster-whisper-large-v3","dockerfile":"Dockerfile.whisper"},
-              {"name":"flux-schnell","hf_repo":"black-forest-labs/FLUX.1-schnell","dockerfile":"Dockerfile.diffusion"},
-              {"name":"dreamshaper-8","hf_repo":"Lykon/dreamshaper-8","dockerfile":"Dockerfile.diffusion"}
-            ]}' >> $GITHUB_OUTPUT
-          else
-            MODEL="${{ github.event.inputs.model }}"
-            # Look up the model from models.json
-            HF_REPO=$(jq -r --arg name "$MODEL" '.models[] | select(.name == $name) | .hf_repo' models.json)
-            ENGINE=$(jq -r --arg name "$MODEL" '.models[] | select(.name == $name) | .engine' models.json)
-            case "$ENGINE" in
-              sglang) DOCKERFILE="Dockerfile.sglang" ;;
-              whisper) DOCKERFILE="Dockerfile.whisper" ;;
-              diffusion) DOCKERFILE="Dockerfile.diffusion" ;;
-              *) DOCKERFILE="Dockerfile.sglang" ;;
-            esac
-            echo "matrix={\"include\":[{\"name\":\"$MODEL\",\"hf_repo\":\"$HF_REPO\",\"dockerfile\":\"$DOCKERFILE\"}]}" >> $GITHUB_OUTPUT
-          fi
-
   build:
-    needs: build-matrix
     runs-on: ubuntu-latest
     strategy:
-      matrix: ${{ fromJson(needs.build-matrix.outputs.matrix) }}
+      matrix:
+        include:
+          - name: sglang
+            dockerfile: Dockerfile.sglang
+          - name: whisper
+            dockerfile: Dockerfile.whisper
+          - name: diffusion
+            dockerfile: Dockerfile.diffusion
       fail-fast: false
     permissions:
       contents: read
       packages: write
+    # Skip if a specific image was requested and this isn't it
+    if: >-
+      github.event.inputs.image == 'all' ||
+      github.event.inputs.image == '' ||
+      github.event.inputs.image == matrix.name
     steps:
       - uses: actions/checkout@v4
 
@@ -108,9 +66,5 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ matrix.name }}:latest
             ${{ env.REGISTRY }}/${{ matrix.name }}:${{ github.sha }}
-          build-args: |
-            HF_REPO=${{ matrix.hf_repo }}
-          secrets: |
-            hf_token=${{ secrets.HF_TOKEN }}
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
