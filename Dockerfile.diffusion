@@ -1,0 +1,52 @@
+# Diffusion model image with baked-in weights
+# Usage: docker build --build-arg HF_REPO=black-forest-labs/FLUX.1-schnell -f Dockerfile.diffusion -t flux-schnell .
+
+FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04
+
+ARG HF_REPO
+ARG MODEL_DIR=/models
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV MODEL_PATH=${MODEL_DIR}/${HF_REPO}
+
+# Install Python and dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 python3-pip python3-dev git && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir \
+    torch torchvision \
+    diffusers[torch] \
+    transformers \
+    accelerate \
+    safetensors \
+    huggingface_hub[cli] \
+    flask \
+    gunicorn \
+    Pillow
+
+# Download model weights during build
+RUN --mount=type=secret,id=hf_token,required=false \
+    HF_TOKEN_FILE=/run/secrets/hf_token && \
+    if [ -f "$HF_TOKEN_FILE" ] && [ -s "$HF_TOKEN_FILE" ]; then \
+        export HF_TOKEN=$(cat "$HF_TOKEN_FILE"); \
+    fi && \
+    huggingface-cli download ${HF_REPO} \
+        --local-dir ${MODEL_PATH} \
+        --local-dir-use-symlinks False && \
+    rm -rf /tmp/hf_cache /root/.cache/huggingface
+
+# Copy the diffusion server script
+COPY scripts/diffusion_server.py /app/diffusion_server.py
+
+LABEL org.opencontainers.image.source="https://github.com/swanchain/swan-model-images"
+LABEL org.opencontainers.image.description="Swan Inference: ${HF_REPO}"
+LABEL io.swanchain.model.hf_repo="${HF_REPO}"
+LABEL io.swanchain.engine="diffusers"
+
+ENV DIFFUSION_MODEL_PATH=${MODEL_PATH}
+ENV DIFFUSION_PORT=8000
+
+EXPOSE 8000
+
+CMD ["python3", "/app/diffusion_server.py"]

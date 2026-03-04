@@ -1,0 +1,183 @@
+{
+  "models": [
+    {
+      "name": "euryale-70b",
+      "hf_repo": "Sao10K/L3.3-70B-Euryale-v2.3",
+      "model_id": "Sao10K/L3.3-70B-Euryale-v2.3",
+      "engine": "sglang",
+      "tier": "S",
+      "params": "70B",
+      "min_vram_gb": 40,
+      "tensor_parallel": 2,
+      "context_length": 131072,
+      "description": "Roleplay-focused 70B model"
+    },
+    {
+      "name": "sapphira-70b",
+      "hf_repo": "BruhzWater/Sapphira-L3.3-70b-0.1",
+      "model_id": "BruhzWater/Sapphira-L3.3-70b-0.1",
+      "engine": "sglang",
+      "tier": "S",
+      "params": "70B",
+      "min_vram_gb": 40,
+      "tensor_parallel": 2,
+      "context_length": 65536,
+      "description": "Storytelling and immersive dialogue"
+    },
+    {
+      "name": "llama-3.3-70b",
+      "hf_repo": "meta-llama/Llama-3.3-70B-Instruct",
+      "model_id": "meta-llama/Llama-3.3-70B-Instruct",
+      "engine": "sglang",
+      "tier": "S",
+      "params": "70B",
+      "min_vram_gb": 40,
+      "tensor_parallel": 2,
+      "context_length": 131072,
+      "description": "Multilingual with 405B-equivalent performance"
+    },
+    {
+      "name": "mistral-small-24b",
+      "hf_repo": "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+      "model_id": "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+      "engine": "sglang",
+      "tier": "A",
+      "params": "24B",
+      "min_vram_gb": 48,
+      "tensor_parallel": 1,
+      "context_length": 32768,
+      "description": "Long context with fewer errors"
+    },
+    {
+      "name": "cydonia-24b",
+      "hf_repo": "TheDrummer/Cydonia-24B-v4.1",
+      "model_id": "TheDrummer/Cydonia-24B-v4.1",
+      "engine": "sglang",
+      "tier": "A",
+      "params": "24B",
+      "min_vram_gb": 48,
+      "tensor_parallel": 1,
+      "context_length": 131072,
+      "description": "Uncensored creative writing"
+    },
+    {
+      "name": "violet-lotus-12b",
+      "hf_repo": "FallenMerick/MN-Violet-Lotus-12B",
+      "model_id": "FallenMerick/MN-Violet-Lotus-12B",
+      "engine": "sglang",
+      "tier": "B",
+      "params": "12B",
+      "min_vram_gb": 24,
+      "tensor_parallel": 1,
+      "context_length": 65536,
+      "description": "Emotional intelligence and creative writing"
+    },
+    {
+      "name": "stheno-8b",
+      "hf_repo": "Sao10K/L3-8B-Stheno-v3.2",
+      "model_id": "Sao10K/L3-8B-Stheno-v3.2",
+      "engine": "sglang",
+      "tier": "B",
+      "params": "8B",
+      "min_vram_gb": 16,
+      "tensor_parallel": 1,
+      "context_length": 8192,
+      "description": "Roleplay and assistant tasks"
+    },
+    {
+      "name": "lumimaid-8b",
+      "hf_repo": "NeverSleep/Llama-3-Lumimaid-8B-v0.1",
+      "model_id": "NeverSleep/Llama-3-Lumimaid-8B-v0.1",
+      "engine": "sglang",
+      "tier": "B",
+      "params": "8B",
+      "min_vram_gb": 16,
+      "tensor_parallel": 1,
+      "context_length": 32768,
+      "description": "Creative roleplay and storytelling"
+    },
+    {
+      "name": "llama-3.1-8b",
+      "hf_repo": "meta-llama/Llama-3.1-8B-Instruct",
+      "model_id": "meta-llama/Llama-3.1-8B-Instruct",
+      "engine": "sglang",
+      "tier": "B",
+      "params": "8B",
+      "min_vram_gb": 20,
+      "tensor_parallel": 1,
+      "context_length": 131072,
+      "description": "Local deployment 8B model"
+    },
+    {
+      "name": "qwen-2.5-7b",
+      "hf_repo": "Qwen/Qwen2.5-7B-Instruct",
+      "model_id": "Qwen/Qwen2.5-7B-Instruct",
+      "engine": "sglang",
+      "tier": "B",
+      "params": "7B",
+      "min_vram_gb": 16,
+      "tensor_parallel": 1,
+      "context_length": 131072,
+      "description": "Local deployment 7B model"
+    },
+    {
+      "name": "qwen3-embedding-8b",
+      "hf_repo": "Qwen/Qwen3-Embedding-8B",
+      "model_id": "Qwen/Qwen3-Embedding-8B",
+      "engine": "sglang",
+      "tier": "C",
+      "params": "8B",
+      "min_vram_gb": 16,
+      "tensor_parallel": 1,
+      "context_length": 8192,
+      "description": "High-quality text embeddings",
+      "extra_args": "--is-embedding"
+    },
+    {
+      "name": "bge-reranker-v2-m3",
+      "hf_repo": "BAAI/bge-reranker-v2-m3",
+      "model_id": "BAAI/bge-reranker-v2-m3",
+      "engine": "sglang",
+      "tier": "C",
+      "params": "568M",
+      "min_vram_gb": 4,
+      "tensor_parallel": 1,
+      "context_length": 8192,
+      "description": "Multilingual reranking model",
+      "extra_args": "--is-embedding"
+    },
+    {
+      "name": "whisper-large-v3",
+      "hf_repo": "Systran/faster-whisper-large-v3",
+      "model_id": "Systran/faster-whisper-large-v3",
+      "engine": "whisper",
+      "tier": "C",
+      "params": "1.5B",
+      "min_vram_gb": 6,
+      "tensor_parallel": 1,
+      "description": "Fast speech-to-text transcription"
+    },
+    {
+      "name": "flux-schnell",
+      "hf_repo": "black-forest-labs/FLUX.1-schnell",
+      "model_id": "black-forest-labs/FLUX.1-schnell",
+      "engine": "diffusion",
+      "tier": "C",
+      "params": "12B",
+      "min_vram_gb": 12,
+      "tensor_parallel": 1,
+      "description": "Fast high-quality image generation"
+    },
+    {
+      "name": "dreamshaper-8",
+      "hf_repo": "Lykon/dreamshaper-8",
+      "model_id": "Lykon/dreamshaper-8",
+      "engine": "diffusion",
+      "tier": "C",
+      "params": "1B",
+      "min_vram_gb": 8,
+      "tensor_parallel": 1,
+      "description": "Text-to-image Stable Diffusion-based"
+    }
+  ]
+}

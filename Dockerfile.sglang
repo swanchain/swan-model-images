@@ -1,0 +1,46 @@
+# SGLang-based model image with baked-in weights
+# Usage: docker build --build-arg HF_REPO=Sao10K/L3-8B-Stheno-v3.2 -f Dockerfile.sglang -t stheno-8b .
+
+ARG BASE_IMAGE=lmsysorg/sglang:latest
+FROM ${BASE_IMAGE}
+
+ARG HF_REPO
+ARG HF_TOKEN=""
+ARG MODEL_DIR=/models
+
+ENV HF_HOME=/tmp/hf_cache
+ENV MODEL_PATH=${MODEL_DIR}/${HF_REPO}
+
+# Install huggingface-cli if not present
+RUN pip install --no-cache-dir huggingface_hub[cli] 2>/dev/null || true
+
+# Download model weights during build (baked into image)
+RUN --mount=type=secret,id=hf_token,required=false \
+    HF_TOKEN_FILE=/run/secrets/hf_token && \
+    if [ -f "$HF_TOKEN_FILE" ] && [ -s "$HF_TOKEN_FILE" ]; then \
+        export HF_TOKEN=$(cat "$HF_TOKEN_FILE"); \
+    fi && \
+    huggingface-cli download ${HF_REPO} \
+        --local-dir ${MODEL_PATH} \
+        --local-dir-use-symlinks False && \
+    rm -rf /tmp/hf_cache
+
+# Metadata labels
+LABEL org.opencontainers.image.source="https://github.com/swanchain/swan-model-images"
+LABEL org.opencontainers.image.description="Swan Inference: ${HF_REPO}"
+LABEL io.swanchain.model.hf_repo="${HF_REPO}"
+LABEL io.swanchain.engine="sglang"
+
+# Copy entrypoint script
+COPY scripts/sglang_entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Default env vars — providers can override
+ENV SGLANG_MODEL_PATH=${MODEL_PATH}
+ENV SGLANG_PORT=8000
+ENV SGLANG_HOST=0.0.0.0
+ENV SGLANG_TP=1
+
+EXPOSE 8000
+
+ENTRYPOINT ["/app/entrypoint.sh"]
